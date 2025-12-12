@@ -1,22 +1,52 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import MarkdownRenderer from '../../components/MarkdownRenderer';
 import Link from 'next/link';
+import { useAuth } from '@/components/AuthContext';
+import { useRouter } from 'next/navigation';
 
 export default function Editor() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const { user, session, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center">
+        <p className="text-slate-500">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null; // Will redirect
+  }
 
   const handleSave = async () => {
     setStatus('saving');
     try {
       const date = new Date().toISOString();
+      // Pass the access token in the Authorization header
+      const accessToken = session?.access_token;
+
+      if (!accessToken) {
+        throw new Error('No access token available');
+      }
+
       const response = await fetch('/api/posts', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
         },
         body: JSON.stringify({ title, date, content }),
       });
