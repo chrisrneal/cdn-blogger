@@ -2,9 +2,18 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 
+// Helper to get authenticated client
+const getAuthenticatedSupabase = (token: string) => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key';
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+  });
+};
+
 export async function POST(request: Request) {
   try {
-    const { title, date, content } = await request.json();
+    const { title, date, content, status } = await request.json();
 
     // Check for Authorization header
     const authHeader = request.headers.get('Authorization');
@@ -37,19 +46,15 @@ export async function POST(request: Request) {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)+/g, '');
 
-    // Create an authenticated client for the insert operation
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key';
-    const supabaseAuthenticated = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
+    const supabaseAuthenticated = getAuthenticatedSupabase(token);
 
     const { error } = await supabaseAuthenticated.from('posts').insert({
       slug,
       title,
-      date, // Assuming date string is compatible with timestamp (ISO) or Supabase handles cast
+      date,
       content,
-      created_by: user.id, // Use the authenticated user's ID
+      status: status || 'draft',
+      created_by: user.id,
     });
 
     if (error) {
@@ -62,6 +67,43 @@ export async function POST(request: Request) {
     console.error('Error saving post:', error);
     return NextResponse.json(
       { error: 'Failed to save post' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function GET(request: Request) {
+  try {
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const supabaseAuthenticated = getAuthenticatedSupabase(token);
+
+    // Fetch posts created by this user
+    const { data, error } = await supabaseAuthenticated
+      .from('posts')
+      .select('id, slug, title, date, status, created_at')
+      .eq('created_by', user.id)
+      .order('date', { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    return NextResponse.json({ posts: data });
+  } catch (error) {
+    console.error('Error fetching user posts:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch posts' },
       { status: 500 }
     );
   }
