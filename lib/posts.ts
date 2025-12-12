@@ -48,19 +48,6 @@ export function getSortedPostsData(): PostData[] {
   });
 }
 
-export function getAllPostIds() {
-  const fileNames = fs.readdirSync(postsDirectory);
-  return fileNames
-    .filter((fileName) => fileName.endsWith('.md'))
-    .map((fileName) => {
-      return {
-        params: {
-          id: fileName.replace(/\.md$/, ''),
-        },
-      };
-    });
-}
-
 export function getPostData(id: string): PostData {
   const fullPath = path.join(postsDirectory, `${id}.md`);
   const fileContents = fs.readFileSync(fullPath, 'utf8');
