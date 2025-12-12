@@ -47,3 +47,32 @@ export function getSortedPostsData(): PostData[] {
     }
   });
 }
+
+export function getAllPostIds() {
+  const fileNames = fs.readdirSync(postsDirectory);
+  return fileNames
+    .filter((fileName) => fileName.endsWith('.md'))
+    .map((fileName) => {
+      return {
+        params: {
+          id: fileName.replace(/\.md$/, ''),
+        },
+      };
+    });
+}
+
+export function getPostData(id: string): PostData {
+  const fullPath = path.join(postsDirectory, `${id}.md`);
+  const fileContents = fs.readFileSync(fullPath, 'utf8');
+
+  // Use gray-matter to parse the post metadata section
+  const matterResult = matter(fileContents);
+
+  // Combine the data with the id
+  return {
+    id,
+    title: matterResult.data.title,
+    date: matterResult.data.date,
+    body: matterResult.content,
+  };
+}
