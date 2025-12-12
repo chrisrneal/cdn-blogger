@@ -13,7 +13,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@supabase/supabase-js": "^2.87.1",
     "@tailwindcss/typography": "^0.5.19",
+    "dotenv": "^17.2.3",
     "gray-matter": "^4.0.3",
     "next": "^16.0.10",
     "react": "^19.2.3",
