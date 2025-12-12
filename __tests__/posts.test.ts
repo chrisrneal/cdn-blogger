@@ -1,4 +1,4 @@
-import { getSortedPostsData } from '../lib/posts';
+import { getSortedPostsData, getPostData, getAllPostIds } from '../lib/posts';
 
 describe('getSortedPostsData', () => {
   it('should return posts sorted by date', () => {
@@ -26,5 +26,25 @@ describe('getSortedPostsData', () => {
       expect(welcomePost).toBeDefined();
       expect(welcomePost?.date).toBe('2023-10-27');
       expect(welcomePost?.body).toContain('Hello World');
+  });
+});
+
+describe('getPostData', () => {
+  it('should return data for a specific post', () => {
+    const postData = getPostData('welcome');
+    expect(postData.id).toBe('welcome');
+    expect(postData.title).toBe('Welcome to Next.js');
+    expect(postData.date).toBe('2023-10-27');
+    expect(postData.body).toContain('Hello World');
+  });
+});
+
+describe('getAllPostIds', () => {
+  it('should return all post ids', () => {
+    const ids = getAllPostIds();
+    // We expect at least the welcome post and the second post
+    expect(ids.length).toBeGreaterThanOrEqual(2);
+    const welcomeId = ids.find(p => p.params.id === 'welcome');
+    expect(welcomeId).toBeDefined();
   });
 });
