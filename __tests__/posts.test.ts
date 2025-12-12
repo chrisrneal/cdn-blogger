@@ -1,21 +1,8 @@
-
-// Correct approach for Jest hoisting:
-// 1. Define the mock implementation inside the factory or use `jest.fn()` inside.
-// 2. OR import the mock if using `__mocks__`.
-// 3. OR use a variable that is hoisted? No, variables aren't hoisted.
-// Standard pattern:
-
 import { getSortedPostsData, getPostData } from '../lib/posts';
 import { supabaseAdmin } from '../lib/supabase';
 
 // Mock the module
 jest.mock('../lib/supabase', () => {
-    // We create the mock functions inside the factory to avoid hoisting issues,
-    // OR we can just return a basic structure and spy on it later?
-    // But since we are importing `supabaseAdmin`, we can't easily replace it unless we mock the whole module.
-
-    // We need to support the chain: from().select().order() and from().select().eq().single()
-
     const mockSingle = jest.fn();
     const mockEq = jest.fn(() => ({ single: mockSingle }));
     const mockOrder = jest.fn();
@@ -26,44 +13,14 @@ jest.mock('../lib/supabase', () => {
         supabaseAdmin: {
             from: mockFrom,
         },
-        // expose mocks for assertion (optional, but tricky with module factory)
-        // A better way is to attach them to the mocked object if possible.
-        // Or simply rely on the fact that we can traverse the mock structure.
     };
 });
 
-// To get access to the mocks we just created:
-// Since we mocked `../lib/supabase`, the imported `supabaseAdmin` is the mocked version.
-// We can cast it to `jest.Mocked` or `any` to access the methods.
-
 describe('lib/posts', () => {
-    const mockFrom = (supabaseAdmin.from as jest.Mock);
-
-    // We need to traverse down to get the inner mocks to configure/assert them.
-    // This is cumbersome.
-
-    // BETTER APPROACH:
-    // Define the mocks globally but use `var` (hoisted)? No.
-    // Use `jest.doMock` inside beforeEach? No.
-
-    // EASIEST APPROACH:
-    // Create the mocks, then `jest.mock` using a factory that returns an object referencing those mocks?
-    // BUT this failed before because of TDZ (Temporal Dead Zone).
-
-    // FIX: Moving `jest.mock` to top is required.
-    // Variables used in factory must be prefixed with `mock` AND initialized... but `const` has TDZ.
-
-    // The solution is to use `require` or define the mocks in the factory itself,
-    // and then in the test, get the mocks via the imported module.
-
     beforeEach(() => {
         jest.clearAllMocks();
 
-        // Reset the default chain behavior
-        // Since we are creating fresh functions in the factory each time? No, factory runs once.
-        // So we need to access the SAME mock instances.
-
-        // Let's retrieve the mocks from the imported object.
+        // Retrieve the mocks from the imported object.
         const mFrom = supabaseAdmin.from as jest.Mock;
         const mSelect = mFrom().select as jest.Mock;
         const mOrder = mSelect().order as jest.Mock;
