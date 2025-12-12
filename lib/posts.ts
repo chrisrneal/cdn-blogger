@@ -47,3 +47,19 @@ export function getSortedPostsData(): PostData[] {
     }
   });
 }
+
+export function getPostData(id: string): PostData {
+  const fullPath = path.join(postsDirectory, `${id}.md`);
+  const fileContents = fs.readFileSync(fullPath, 'utf8');
+
+  // Use gray-matter to parse the post metadata section
+  const matterResult = matter(fileContents);
+
+  // Combine the data with the id
+  return {
+    id,
+    title: matterResult.data.title,
+    date: matterResult.data.date,
+    body: matterResult.content,
+  };
+}
