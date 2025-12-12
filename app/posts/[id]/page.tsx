@@ -1,5 +1,6 @@
 import { getPostData, getSortedPostsData } from '../../../lib/posts';
 import MarkdownRenderer from '../../../components/MarkdownRenderer';
+import EditPostButton from '@/components/EditPostButton';
 
 export async function generateStaticParams() {
   const posts = await getSortedPostsData();
@@ -31,6 +32,9 @@ export default async function Post({
                 day: 'numeric',
               })}
             </time>
+            {postData.created_by && (
+                <EditPostButton authorId={postData.created_by} slug={postData.id} />
+            )}
           </header>
 
           <MarkdownRenderer content={postData.body} />

@@ -5,12 +5,15 @@ export interface PostData {
   title: string;
   date: string;
   body: string;
+  created_by?: string;
+  status?: 'draft' | 'published';
 }
 
 export async function getSortedPostsData(): Promise<PostData[]> {
   const { data, error } = await supabase
     .from('posts')
-    .select('slug, title, date, content')
+    .select('slug, title, date, content, created_by, status')
+    .eq('status', 'published') // Only fetch published posts for the public list
     .order('date', { ascending: false });
 
   if (error) {
@@ -23,6 +26,8 @@ export async function getSortedPostsData(): Promise<PostData[]> {
     title: post.title,
     date: post.date,
     body: post.content,
+    created_by: post.created_by,
+    status: post.status,
   }));
 }
 
@@ -30,7 +35,7 @@ export async function getPostData(id: string): Promise<PostData> {
   // 'id' here is actually the slug
   const { data, error } = await supabase
     .from('posts')
-    .select('slug, title, date, content')
+    .select('slug, title, date, content, created_by, status')
     .eq('slug', id)
     .single();
 
@@ -43,5 +48,7 @@ export async function getPostData(id: string): Promise<PostData> {
     title: data.title,
     date: data.date,
     body: data.content,
+    created_by: data.created_by,
+    status: data.status,
   };
 }
