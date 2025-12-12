@@ -1,65 +1,47 @@
-import fs from 'fs';
-import path from 'path';
-import matter from 'gray-matter';
-
-const postsDirectory = path.join(process.cwd(), 'posts');
+import { supabaseAdmin } from './supabase';
 
 export interface PostData {
-  id: string;
+  id: string; // This will map to slug for backward compatibility in the app logic
   title: string;
   date: string;
   body: string;
 }
 
-export function getSortedPostsData(): PostData[] {
-  // Get file names under /posts
-  const fileNames = fs.readdirSync(postsDirectory);
-  const allPostsData = fileNames
-    .filter((fileName) => fileName.endsWith('.md'))
-    .map((fileName) => {
-      // Read markdown file as string
-      const fullPath = path.join(postsDirectory, fileName);
-      const fileContents = fs.readFileSync(fullPath, 'utf8');
+export async function getSortedPostsData(): Promise<PostData[]> {
+  const { data, error } = await supabaseAdmin
+    .from('posts')
+    .select('slug, title, date, content')
+    .order('date', { ascending: false });
 
-      // Use gray-matter to parse the post metadata section
-      const matterResult = matter(fileContents);
+  if (error) {
+    console.error('Error fetching posts:', error);
+    return [];
+  }
 
-      // Remove ".md" from file name to get id
-      const id = fileName.replace(/\.md$/, '');
-
-      // Combine the data with the id
-      return {
-        id,
-        title: matterResult.data.title,
-        date: matterResult.data.date,
-        body: matterResult.content,
-      } as PostData;
-    });
-
-  // Sort posts by date
-  return allPostsData.sort((a, b) => {
-    if (a.date < b.date) {
-      return 1;
-    } else if (a.date > b.date) {
-      return -1;
-    } else {
-      return 0;
-    }
-  });
+  return data.map((post) => ({
+    id: post.slug, // Mapping slug to id to keep component compatibility
+    title: post.title,
+    date: post.date,
+    body: post.content,
+  }));
 }
 
-export function getPostData(id: string): PostData {
-  const fullPath = path.join(postsDirectory, `${id}.md`);
-  const fileContents = fs.readFileSync(fullPath, 'utf8');
+export async function getPostData(id: string): Promise<PostData> {
+  // 'id' here is actually the slug
+  const { data, error } = await supabaseAdmin
+    .from('posts')
+    .select('slug, title, date, content')
+    .eq('slug', id)
+    .single();
 
-  // Use gray-matter to parse the post metadata section
-  const matterResult = matter(fileContents);
+  if (error || !data) {
+    throw new Error(`Post not found: ${id}`);
+  }
 
-  // Combine the data with the id
   return {
-    id,
-    title: matterResult.data.title,
-    date: matterResult.data.date,
-    body: matterResult.content,
+    id: data.slug,
+    title: data.title,
+    date: data.date,
+    body: data.content,
   };
 }

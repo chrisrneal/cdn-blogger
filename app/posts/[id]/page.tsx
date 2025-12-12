@@ -2,7 +2,7 @@ import { getPostData, getSortedPostsData } from '../../../lib/posts';
 import MarkdownRenderer from '../../../components/MarkdownRenderer';
 
 export async function generateStaticParams() {
-  const posts = getSortedPostsData();
+  const posts = await getSortedPostsData();
   return posts.map((post) => ({
     id: post.id,
   }));
@@ -14,7 +14,7 @@ export default async function Post({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const postData = getPostData(id);
+  const postData = await getPostData(id);
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 font-sans">

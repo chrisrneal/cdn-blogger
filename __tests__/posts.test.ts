@@ -1,50 +1,106 @@
-import { getSortedPostsData, getPostData, getAllPostIds } from '../lib/posts';
+import { getSortedPostsData, getPostData } from '../lib/posts';
+import { supabaseAdmin } from '../lib/supabase';
 
-describe('getSortedPostsData', () => {
-  it('should return posts sorted by date', () => {
-    const posts = getSortedPostsData();
+// Mock the module
+jest.mock('../lib/supabase', () => {
+    const mockSingle = jest.fn();
+    const mockEq = jest.fn(() => ({ single: mockSingle }));
+    const mockOrder = jest.fn();
+    const mockSelect = jest.fn(() => ({ order: mockOrder, eq: mockEq }));
+    const mockFrom = jest.fn(() => ({ select: mockSelect }));
 
-    // We expect 2 posts based on our dummy data
-    expect(posts.length).toBeGreaterThanOrEqual(2);
-
-    const [firstPost, secondPost] = posts;
-
-    // Verify sorting (Newest first)
-    // 2023-11-01 should be before 2023-10-27
-    expect(new Date(firstPost.date).getTime()).toBeGreaterThan(new Date(secondPost.date).getTime());
-
-    // Verify content structure
-    expect(firstPost).toHaveProperty('title');
-    expect(firstPost).toHaveProperty('date');
-    expect(firstPost).toHaveProperty('body');
-  });
-
-  it('should parse metadata correctly', () => {
-      const posts = getSortedPostsData();
-      const welcomePost = posts.find(p => p.title === 'Welcome to Next.js');
-
-      expect(welcomePost).toBeDefined();
-      expect(welcomePost?.date).toBe('2023-10-27');
-      expect(welcomePost?.body).toContain('Hello World');
-  });
+    return {
+        supabaseAdmin: {
+            from: mockFrom,
+        },
+    };
 });
 
-describe('getPostData', () => {
-  it('should return data for a specific post', () => {
-    const postData = getPostData('welcome');
-    expect(postData.id).toBe('welcome');
-    expect(postData.title).toBe('Welcome to Next.js');
-    expect(postData.date).toBe('2023-10-27');
-    expect(postData.body).toContain('Hello World');
-  });
-});
+describe('lib/posts', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
 
-describe('getAllPostIds', () => {
-  it('should return all post ids', () => {
-    const ids = getAllPostIds();
-    // We expect at least the welcome post and the second post
-    expect(ids.length).toBeGreaterThanOrEqual(2);
-    const welcomeId = ids.find(p => p.params.id === 'welcome');
-    expect(welcomeId).toBeDefined();
-  });
+        // Retrieve the mocks from the imported object.
+        const mFrom = supabaseAdmin.from as jest.Mock;
+        const mSelect = mFrom().select as jest.Mock;
+        const mOrder = mSelect().order as jest.Mock;
+        const mEq = mSelect().eq as jest.Mock;
+        const mSingle = mEq().single as jest.Mock;
+
+        // Set default resolved values
+        mOrder.mockResolvedValue({ data: [], error: null });
+        mSingle.mockResolvedValue({ data: null, error: null });
+    });
+
+    describe('getSortedPostsData', () => {
+        it('should return mapped posts sorted by date', async () => {
+            const mockData = [
+                { slug: 'post-1', title: 'Post 1', date: '2023-01-02', content: 'Content 1' },
+                { slug: 'post-2', title: 'Post 2', date: '2023-01-01', content: 'Content 2' },
+            ];
+
+            const mFrom = supabaseAdmin.from as jest.Mock;
+            const mSelect = mFrom().select as jest.Mock;
+            const mOrder = mSelect().order as jest.Mock;
+
+            mOrder.mockResolvedValueOnce({ data: mockData, error: null });
+
+            const posts = await getSortedPostsData();
+
+            expect(mFrom).toHaveBeenCalledWith('posts');
+            expect(mSelect).toHaveBeenCalledWith('slug, title, date, content');
+            expect(mOrder).toHaveBeenCalledWith('date', { ascending: false });
+
+            expect(posts).toHaveLength(2);
+            expect(posts[0].id).toBe('post-1');
+            expect(posts[0].title).toBe('Post 1');
+        });
+
+        it('should return empty array on error', async () => {
+             const mFrom = supabaseAdmin.from as jest.Mock;
+             const mSelect = mFrom().select as jest.Mock;
+             const mOrder = mSelect().order as jest.Mock;
+
+            mOrder.mockResolvedValueOnce({ data: null, error: { message: 'Some error' } });
+
+            const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+            const posts = await getSortedPostsData();
+
+            expect(posts).toEqual([]);
+            expect(consoleSpy).toHaveBeenCalled();
+            consoleSpy.mockRestore();
+        });
+    });
+
+    describe('getPostData', () => {
+        it('should return data for a specific post', async () => {
+            const mockPost = { slug: 'welcome', title: 'Welcome', date: '2023-01-01', content: 'Hello' };
+
+            const mFrom = supabaseAdmin.from as jest.Mock;
+            const mSelect = mFrom().select as jest.Mock;
+            const mEq = mSelect().eq as jest.Mock;
+            const mSingle = mEq().single as jest.Mock;
+
+            mSingle.mockResolvedValueOnce({ data: mockPost, error: null });
+
+            const postData = await getPostData('welcome');
+
+            expect(mFrom).toHaveBeenCalledWith('posts');
+            expect(mSelect).toHaveBeenCalledWith('slug, title, date, content');
+            expect(mEq).toHaveBeenCalledWith('slug', 'welcome');
+            expect(postData.id).toBe('welcome');
+            expect(postData.title).toBe('Welcome');
+        });
+
+        it('should throw error if post not found', async () => {
+            const mFrom = supabaseAdmin.from as jest.Mock;
+            const mSelect = mFrom().select as jest.Mock;
+            const mEq = mSelect().eq as jest.Mock;
+            const mSingle = mEq().single as jest.Mock;
+
+            mSingle.mockResolvedValueOnce({ data: null, error: { message: 'Not found' } });
+
+            await expect(getPostData('missing')).rejects.toThrow('Post not found: missing');
+        });
+    });
 });

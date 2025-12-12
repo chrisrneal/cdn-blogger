@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { supabaseAdmin } from '@/lib/supabase';
 
 export async function POST(request: Request) {
   try {
@@ -18,17 +17,18 @@ export async function POST(request: Request) {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)+/g, '');
 
-    const fileName = `${slug}.md`;
-    const filePath = path.join(process.cwd(), 'posts', fileName);
+    const { error } = await supabaseAdmin.from('posts').insert({
+      slug,
+      title,
+      date, // Assuming date string is compatible with timestamp (ISO) or Supabase handles cast
+      content,
+      created_by: 'api_user', // Dummy user for now
+    });
 
-    const fileContent = `---
-title: "${title}"
-date: "${date}"
----
-
-${content}`;
-
-    fs.writeFileSync(filePath, fileContent);
+    if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+    }
 
     return NextResponse.json({ success: true, slug });
   } catch (error) {
