@@ -5,6 +5,7 @@ import matter from 'gray-matter';
 const postsDirectory = path.join(process.cwd(), 'posts');
 
 export interface PostData {
+  id: string;
   title: string;
   date: string;
   body: string;
@@ -23,8 +24,12 @@ export function getSortedPostsData(): PostData[] {
       // Use gray-matter to parse the post metadata section
       const matterResult = matter(fileContents);
 
+      // Remove ".md" from file name to get id
+      const id = fileName.replace(/\.md$/, '');
+
       // Combine the data with the id
       return {
+        id,
         title: matterResult.data.title,
         date: matterResult.data.date,
         body: matterResult.content,
