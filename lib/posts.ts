@@ -1,4 +1,4 @@
-import { supabaseAdmin } from './supabase';
+import { supabase } from './supabase';
 
 export interface PostData {
   id: string; // This will map to slug for backward compatibility in the app logic
@@ -8,7 +8,7 @@ export interface PostData {
 }
 
 export async function getSortedPostsData(): Promise<PostData[]> {
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from('posts')
     .select('slug, title, date, content')
     .order('date', { ascending: false });
@@ -28,7 +28,7 @@ export async function getSortedPostsData(): Promise<PostData[]> {
 
 export async function getPostData(id: string): Promise<PostData> {
   // 'id' here is actually the slug
-  const { data, error } = await supabaseAdmin
+  const { data, error } = await supabase
     .from('posts')
     .select('slug, title, date, content')
     .eq('slug', id)

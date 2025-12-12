@@ -1,5 +1,5 @@
 import { getSortedPostsData, getPostData } from '../lib/posts';
-import { supabaseAdmin } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 
 // Mock the module
 jest.mock('../lib/supabase', () => {
@@ -10,7 +10,7 @@ jest.mock('../lib/supabase', () => {
     const mockFrom = jest.fn(() => ({ select: mockSelect }));
 
     return {
-        supabaseAdmin: {
+        supabase: {
             from: mockFrom,
         },
     };
@@ -21,7 +21,7 @@ describe('lib/posts', () => {
         jest.clearAllMocks();
 
         // Retrieve the mocks from the imported object.
-        const mFrom = supabaseAdmin.from as jest.Mock;
+        const mFrom = supabase.from as jest.Mock;
         const mSelect = mFrom().select as jest.Mock;
         const mOrder = mSelect().order as jest.Mock;
         const mEq = mSelect().eq as jest.Mock;
@@ -39,7 +39,7 @@ describe('lib/posts', () => {
                 { slug: 'post-2', title: 'Post 2', date: '2023-01-01', content: 'Content 2' },
             ];
 
-            const mFrom = supabaseAdmin.from as jest.Mock;
+            const mFrom = supabase.from as jest.Mock;
             const mSelect = mFrom().select as jest.Mock;
             const mOrder = mSelect().order as jest.Mock;
 
@@ -57,7 +57,7 @@ describe('lib/posts', () => {
         });
 
         it('should return empty array on error', async () => {
-             const mFrom = supabaseAdmin.from as jest.Mock;
+             const mFrom = supabase.from as jest.Mock;
              const mSelect = mFrom().select as jest.Mock;
              const mOrder = mSelect().order as jest.Mock;
 
@@ -76,7 +76,7 @@ describe('lib/posts', () => {
         it('should return data for a specific post', async () => {
             const mockPost = { slug: 'welcome', title: 'Welcome', date: '2023-01-01', content: 'Hello' };
 
-            const mFrom = supabaseAdmin.from as jest.Mock;
+            const mFrom = supabase.from as jest.Mock;
             const mSelect = mFrom().select as jest.Mock;
             const mEq = mSelect().eq as jest.Mock;
             const mSingle = mEq().single as jest.Mock;
@@ -93,7 +93,7 @@ describe('lib/posts', () => {
         });
 
         it('should throw error if post not found', async () => {
-            const mFrom = supabaseAdmin.from as jest.Mock;
+            const mFrom = supabase.from as jest.Mock;
             const mSelect = mFrom().select as jest.Mock;
             const mEq = mSelect().eq as jest.Mock;
             const mSingle = mEq().single as jest.Mock;
