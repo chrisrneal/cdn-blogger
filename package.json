@@ -13,10 +13,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@tailwindcss/typography": "^0.5.19",
     "gray-matter": "^4.0.3",
     "next": "^16.0.10",
     "react": "^19.2.3",
-    "react-dom": "^19.2.3"
+    "react-dom": "^19.2.3",
+    "remark": "^13.0.0",
+    "remark-html": "^13.0.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.18",

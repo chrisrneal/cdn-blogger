@@ -1,4 +1,4 @@
-import { getSortedPostsData } from '../lib/posts';
+import { getSortedPostsData, getPostData } from '../lib/posts';
 
 describe('getSortedPostsData', () => {
   it('should return posts sorted by date', () => {
@@ -26,5 +26,21 @@ describe('getSortedPostsData', () => {
       expect(welcomePost).toBeDefined();
       expect(welcomePost?.date).toBe('2023-10-27');
       expect(welcomePost?.body).toContain('Hello World');
+  });
+});
+
+describe('getPostData', () => {
+  it('should return post data with HTML content', async () => {
+    const posts = getSortedPostsData();
+    const firstPostId = posts[0].id;
+
+    const postData = await getPostData(firstPostId);
+
+    expect(postData).toHaveProperty('id');
+    expect(postData.id).toBe(firstPostId);
+    expect(postData).toHaveProperty('title');
+    expect(postData).toHaveProperty('date');
+    expect(postData).toHaveProperty('contentHtml');
+    expect(postData.contentHtml).toContain('<p>'); // Expecting HTML content
   });
 });
