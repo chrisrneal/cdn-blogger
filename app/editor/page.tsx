@@ -73,7 +73,7 @@ function EditorContent() {
         title,
         content,
         status: targetStatus,
-        location: location || null
+        location: location.trim() || null
       };
 
       let url = '/api/posts';

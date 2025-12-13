@@ -23,7 +23,8 @@ export default function PostList({ posts }: PostListProps) {
 
   const filteredPosts = posts.filter(post => {
     if (!locationFilter.trim()) return true;
-    return post.location?.toLowerCase().includes(locationFilter.toLowerCase());
+    if (!post.location) return false;
+    return post.location.toLowerCase().includes(locationFilter.toLowerCase());
   });
 
   return (
