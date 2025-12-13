@@ -92,6 +92,14 @@ export async function PUT(
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
+    // Validate location if provided
+    if (location && location.length > 100) {
+      return NextResponse.json(
+        { error: 'Location must be 100 characters or less' },
+        { status: 400 }
+      );
+    }
+
     // Update
     const updateData: any = { title, content, updated_at: new Date().toISOString() };
     if (status) updateData.status = status;

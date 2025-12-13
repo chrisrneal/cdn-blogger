@@ -41,6 +41,14 @@ export async function POST(request: Request) {
       );
     }
 
+    // Validate location if provided
+    if (location && location.length > 100) {
+      return NextResponse.json(
+        { error: 'Location must be 100 characters or less' },
+        { status: 400 }
+      );
+    }
+
     const slug = title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')

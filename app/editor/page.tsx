@@ -225,6 +225,7 @@ function EditorContent() {
               placeholder="Location (optional)"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
+              maxLength={100}
               className="w-full text-sm bg-transparent border-b border-slate-200 dark:border-slate-800 focus:border-slate-400 dark:focus:border-slate-600 focus:ring-0 placeholder:text-slate-400 dark:placeholder:text-slate-600 text-slate-700 dark:text-slate-300 px-2 py-2"
             />
 
