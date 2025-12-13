@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { createClient } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 
@@ -104,6 +105,9 @@ export async function PUT(
     if (error) {
       throw error;
     }
+
+    revalidatePath(`/posts/${slug}`);
+    revalidatePath('/');
 
     return NextResponse.json({ success: true });
   } catch (error) {
