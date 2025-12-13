@@ -2,6 +2,9 @@ import { getPostData, getSortedPostsData } from '../../../lib/posts';
 import MarkdownRenderer from '../../../components/MarkdownRenderer';
 import EditPostButton from '@/components/EditPostButton';
 
+// Force dynamic rendering to ensure the latest data is fetched from the DB
+export const dynamic = 'force-dynamic';
+
 export async function generateStaticParams() {
   const posts = await getSortedPostsData();
   return posts.map((post) => ({
