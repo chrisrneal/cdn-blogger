@@ -476,6 +476,14 @@ describe('commentService', () => {
       expect(result.error).toBeNull();
       
       const tree = result.data as any[];
+      // With maxDepth=2, we should see:
+      // - c1 (depth 1) ✓
+      // - c2 (depth 2) ✓  
+      // - c3 (depth 3) ✗ (removed)
+      expect(tree).toHaveLength(1);
+      expect(tree[0].id).toBe('c1');
+      expect(tree[0].children).toHaveLength(1);
+      expect(tree[0].children[0].id).toBe('c2');
       expect(tree[0].children[0].children).toEqual([]);
     });
 

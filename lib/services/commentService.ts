@@ -511,20 +511,29 @@ export async function changeCommentStatus(
 /**
  * Limits the depth of a comment tree to the specified maximum.
  * Removes all children beyond the maximum depth.
+ * 
+ * @param comments - The comments to process at this level
+ * @param maxDepth - Maximum depth to display (e.g., maxDepth=2 shows depths 1 and 2)
+ * @param currentDepth - Current depth level being processed (starts at 1 for root)
+ * 
+ * @example
+ * // With maxDepth=2, shows root (depth 1) and immediate children (depth 2)
+ * // All grandchildren (depth 3+) are removed
  */
 function limitTreeDepth(
   comments: CommentWithDepth[],
   maxDepth: number,
   currentDepth: number = 1
 ): CommentWithDepth[] {
+  // At max depth, remove all children to prevent deeper nesting
   if (currentDepth >= maxDepth) {
-    // Remove children at max depth
     return comments.map(comment => ({
       ...comment,
       children: [],
     }));
   }
 
+  // Recursively process children at deeper levels
   return comments.map(comment => ({
     ...comment,
     children: comment.children
