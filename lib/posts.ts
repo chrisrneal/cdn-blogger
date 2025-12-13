@@ -7,14 +7,21 @@ export interface PostData {
   body: string;
   created_by?: string;
   status?: 'draft' | 'published';
+  location?: string;
 }
 
-export async function getSortedPostsData(): Promise<PostData[]> {
-  const { data, error } = await supabase
+export async function getSortedPostsData(locationFilter?: string): Promise<PostData[]> {
+  let query = supabase
     .from('posts')
-    .select('slug, title, date, content, created_by, status')
-    .eq('status', 'published') // Only fetch published posts for the public list
-    .order('date', { ascending: false });
+    .select('slug, title, date, content, created_by, status, location')
+    .eq('status', 'published'); // Only fetch published posts for the public list
+
+  // Apply location filter if provided
+  if (locationFilter) {
+    query = query.ilike('location', `%${locationFilter}%`);
+  }
+
+  const { data, error } = await query.order('date', { ascending: false });
 
   if (error) {
     console.error('Error fetching posts:', error);
@@ -28,6 +35,7 @@ export async function getSortedPostsData(): Promise<PostData[]> {
     body: post.content,
     created_by: post.created_by,
     status: post.status,
+    location: post.location,
   }));
 }
 
@@ -35,7 +43,7 @@ export async function getPostData(id: string): Promise<PostData> {
   // 'id' here is actually the slug
   const { data, error } = await supabase
     .from('posts')
-    .select('slug, title, date, content, created_by, status')
+    .select('slug, title, date, content, created_by, status, location')
     .eq('slug', id)
     .single();
 
@@ -50,5 +58,6 @@ export async function getPostData(id: string): Promise<PostData> {
     body: data.content,
     created_by: data.created_by,
     status: data.status,
+    location: data.location,
   };
 }

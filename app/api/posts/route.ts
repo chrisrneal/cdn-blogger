@@ -13,7 +13,7 @@ const getAuthenticatedSupabase = (token: string) => {
 
 export async function POST(request: Request) {
   try {
-    const { title, date, content, status } = await request.json();
+    const { title, date, content, status, location } = await request.json();
 
     // Check for Authorization header
     const authHeader = request.headers.get('Authorization');
@@ -48,14 +48,21 @@ export async function POST(request: Request) {
 
     const supabaseAuthenticated = getAuthenticatedSupabase(token);
 
-    const { data, error } = await supabaseAuthenticated.from('posts').insert({
+    const insertData: any = {
       slug,
       title,
       date,
       content,
       status: status || 'draft',
       created_by: user.id,
-    });
+    };
+
+    // Only include location if it's provided
+    if (location) {
+      insertData.location = location;
+    }
+
+    const { data, error } = await supabaseAuthenticated.from('posts').insert(insertData);
 
     if (error) {
         console.error('Supabase insert error:', {
@@ -98,7 +105,7 @@ export async function GET(request: Request) {
     // Fetch posts created by this user
     const { data, error } = await supabaseAuthenticated
       .from('posts')
-      .select('id, slug, title, date, status, created_at')
+      .select('id, slug, title, date, status, location, created_at')
       .eq('created_by', user.id)
       .order('date', { ascending: false });
 

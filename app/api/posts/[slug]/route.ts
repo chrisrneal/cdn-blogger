@@ -61,7 +61,7 @@ export async function PUT(
 ) {
   try {
     const { slug } = await params;
-    const { title, content, status, date } = await request.json();
+    const { title, content, status, date, location } = await request.json();
 
     const authHeader = request.headers.get('Authorization');
     if (!authHeader) {
@@ -96,6 +96,7 @@ export async function PUT(
     const updateData: any = { title, content, updated_at: new Date().toISOString() };
     if (status) updateData.status = status;
     if (date) updateData.date = date; // Allow updating the display date if passed
+    if (location !== undefined) updateData.location = location || null; // Allow clearing location
 
     const { error } = await supabaseAuthenticated
       .from('posts')

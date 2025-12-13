@@ -11,6 +11,7 @@ import { applyMarkdown, MarkdownFormat } from '@/lib/editorUtils';
 function EditorContent() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [location, setLocation] = useState('');
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [postStatus, setPostStatus] = useState<'draft' | 'published'>('draft');
   const [loadingPost, setLoadingPost] = useState(false);
@@ -45,6 +46,7 @@ function EditorContent() {
           setTitle(post.title);
           setContent(post.content);
           setPostStatus(post.status);
+          setLocation(post.location || '');
         } else {
            console.error('Failed to fetch post');
            // Optionally redirect or show error
@@ -70,7 +72,8 @@ function EditorContent() {
       const body: any = {
         title,
         content,
-        status: targetStatus
+        status: targetStatus,
+        location: location || null
       };
 
       let url = '/api/posts';
@@ -215,6 +218,14 @@ function EditorContent() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full text-3xl font-bold bg-transparent border-none focus:ring-0 placeholder:text-slate-300 dark:placeholder:text-slate-700 text-slate-900 dark:text-white px-2"
+            />
+
+            <input
+              type="text"
+              placeholder="Location (optional)"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="w-full text-sm bg-transparent border-b border-slate-200 dark:border-slate-800 focus:border-slate-400 dark:focus:border-slate-600 focus:ring-0 placeholder:text-slate-400 dark:placeholder:text-slate-600 text-slate-700 dark:text-slate-300 px-2 py-2"
             />
 
              {/* Markdown Toolbar */}

@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { getSortedPostsData } from '../lib/posts';
-import { getPreview } from '../lib/stringUtils';
-import ReactMarkdown from 'react-markdown';
+import PostList from '@/components/PostList';
 
 export default async function Home() {
   const allPostsData = await getSortedPostsData();
@@ -21,37 +20,7 @@ export default async function Home() {
 
           <section>
             <h2 className="sr-only">Blog Posts</h2>
-            <div className="flex flex-col gap-10">
-              {allPostsData.map(({ id, title, date, body }) => {
-                const preview = getPreview(body, 6);
-                
-                return (
-                  <article key={id} className="group">
-                    <time className="text-sm text-slate-400 mb-1 block">
-                      {new Date(date).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </time>
-                    <h3 className="text-xl font-semibold text-slate-900 dark:text-white mb-3">
-                      <Link href={`/posts/${id}`} className="hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
-                        {title}
-                      </Link>
-                    </h3>
-                    <div className="prose prose-sm dark:prose-invert max-w-none mb-3 text-slate-600 dark:text-slate-400">
-                      <ReactMarkdown>{preview}</ReactMarkdown>
-                    </div>
-                    <Link 
-                      href={`/posts/${id}`} 
-                      className="text-sm font-medium text-slate-900 dark:text-white hover:text-slate-600 dark:hover:text-slate-300 transition-colors inline-flex items-center"
-                    >
-                      Read more →
-                    </Link>
-                  </article>
-                );
-              })}
-            </div>
+            <PostList posts={allPostsData} />
           </section>
         </div>
       </main>
