@@ -13,7 +13,7 @@ const getAuthenticatedSupabase = (token: string) => {
 
 export async function POST(request: Request) {
   try {
-    const { title, date, content, status } = await request.json();
+    const { title, date, content, status, location } = await request.json();
 
     // Check for Authorization header
     const authHeader = request.headers.get('Authorization');
@@ -41,6 +41,14 @@ export async function POST(request: Request) {
       );
     }
 
+    // Validate location if provided
+    if (location && location.length > 100) {
+      return NextResponse.json(
+        { error: 'Location must be 100 characters or less' },
+        { status: 400 }
+      );
+    }
+
     const slug = title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
@@ -48,14 +56,21 @@ export async function POST(request: Request) {
 
     const supabaseAuthenticated = getAuthenticatedSupabase(token);
 
-    const { data, error } = await supabaseAuthenticated.from('posts').insert({
+    const insertData: any = {
       slug,
       title,
       date,
       content,
       status: status || 'draft',
       created_by: user.id,
-    });
+    };
+
+    // Include location field (allows empty string to clear it)
+    if (location !== undefined) {
+      insertData.location = location || null;
+    }
+
+    const { data, error } = await supabaseAuthenticated.from('posts').insert(insertData);
 
     if (error) {
         console.error('Supabase insert error:', {
@@ -98,7 +113,7 @@ export async function GET(request: Request) {
     // Fetch posts created by this user
     const { data, error } = await supabaseAuthenticated
       .from('posts')
-      .select('id, slug, title, date, status, created_at')
+      .select('id, slug, title, date, status, location, created_at')
       .eq('created_by', user.id)
       .order('date', { ascending: false });
 

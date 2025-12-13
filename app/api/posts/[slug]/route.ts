@@ -61,7 +61,7 @@ export async function PUT(
 ) {
   try {
     const { slug } = await params;
-    const { title, content, status, date } = await request.json();
+    const { title, content, status, date, location } = await request.json();
 
     const authHeader = request.headers.get('Authorization');
     if (!authHeader) {
@@ -92,10 +92,19 @@ export async function PUT(
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
+    // Validate location if provided
+    if (location && location.length > 100) {
+      return NextResponse.json(
+        { error: 'Location must be 100 characters or less' },
+        { status: 400 }
+      );
+    }
+
     // Update
     const updateData: any = { title, content, updated_at: new Date().toISOString() };
     if (status) updateData.status = status;
     if (date) updateData.date = date; // Allow updating the display date if passed
+    if (location !== undefined) updateData.location = location || null; // Allow clearing location
 
     const { error } = await supabaseAuthenticated
       .from('posts')

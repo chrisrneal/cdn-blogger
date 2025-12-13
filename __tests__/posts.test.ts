@@ -6,15 +6,21 @@ jest.mock('../lib/supabase', () => {
     const mockSingle = jest.fn();
     // Chain for getPostData: .from().select().eq().single()
     // Chain for getSortedPostsData: .from().select().eq().order()
+    // Chain for getSortedPostsData with filter: .from().select().eq().ilike().order()
 
     // We need a flexible chain.
     const mockOrder = jest.fn();
+    const mockIlike = jest.fn(() => ({
+        order: mockOrder,
+    }));
 
     // The `.eq` needs to return an object that has both `.single` (for getPostData)
     // AND `.order` (for getSortedPostsData, because we added .eq('status', 'published') before .order)
+    // AND `.ilike` (for location filtering)
     const mockEq = jest.fn(() => ({
         single: mockSingle,
         order: mockOrder,
+        ilike: mockIlike,
         eq: jest.fn(), // In case of multiple .eq calls, though not used yet
     }));
 
@@ -52,8 +58,8 @@ describe('lib/posts', () => {
     describe('getSortedPostsData', () => {
         it('should return mapped posts sorted by date', async () => {
             const mockData = [
-                { slug: 'post-1', title: 'Post 1', date: '2023-01-02', content: 'Content 1', created_by: 'user1', status: 'published' },
-                { slug: 'post-2', title: 'Post 2', date: '2023-01-01', content: 'Content 2', created_by: 'user1', status: 'published' },
+                { slug: 'post-1', title: 'Post 1', date: '2023-01-02', content: 'Content 1', created_by: 'user1', status: 'published', location: 'New York' },
+                { slug: 'post-2', title: 'Post 2', date: '2023-01-01', content: 'Content 2', created_by: 'user1', status: 'published', location: null },
             ];
 
             // Access the mock functions
@@ -68,7 +74,7 @@ describe('lib/posts', () => {
             const posts = await getSortedPostsData();
 
             expect(mFrom).toHaveBeenCalledWith('posts');
-            expect(mSelect).toHaveBeenCalledWith('slug, title, date, content, created_by, status');
+            expect(mSelect).toHaveBeenCalledWith('slug, title, date, content, created_by, status, location');
             expect(mEq).toHaveBeenCalledWith('status', 'published');
             expect(mOrder).toHaveBeenCalledWith('date', { ascending: false });
 
@@ -76,6 +82,8 @@ describe('lib/posts', () => {
             expect(posts[0].id).toBe('post-1');
             expect(posts[0].title).toBe('Post 1');
             expect(posts[0].status).toBe('published');
+            expect(posts[0].location).toBe('New York');
+            expect(posts[1].location).toBeNull();
         });
 
         it('should return empty array on error', async () => {
@@ -93,11 +101,36 @@ describe('lib/posts', () => {
             expect(consoleSpy).toHaveBeenCalled();
             consoleSpy.mockRestore();
         });
+
+        it('should filter posts by location when locationFilter is provided', async () => {
+            const mockData = [
+                { slug: 'post-1', title: 'Post 1', date: '2023-01-02', content: 'Content 1', created_by: 'user1', status: 'published', location: 'New York' },
+            ];
+
+            const mFrom = supabase.from as jest.Mock;
+            const mSelect = mFrom().select as jest.Mock;
+            const mEq = mSelect().eq as jest.Mock;
+            const mIlike = mEq().ilike as jest.Mock;
+            const mOrder = mIlike().order as jest.Mock;
+
+            mOrder.mockResolvedValueOnce({ data: mockData, error: null });
+
+            const posts = await getSortedPostsData('New York');
+
+            expect(mFrom).toHaveBeenCalledWith('posts');
+            expect(mSelect).toHaveBeenCalledWith('slug, title, date, content, created_by, status, location');
+            expect(mEq).toHaveBeenCalledWith('status', 'published');
+            expect(mIlike).toHaveBeenCalledWith('location', '%New York%');
+            expect(mOrder).toHaveBeenCalledWith('date', { ascending: false });
+
+            expect(posts).toHaveLength(1);
+            expect(posts[0].location).toBe('New York');
+        });
     });
 
     describe('getPostData', () => {
         it('should return data for a specific post', async () => {
-            const mockPost = { slug: 'welcome', title: 'Welcome', date: '2023-01-01', content: 'Hello', created_by: 'user1', status: 'published' };
+            const mockPost = { slug: 'welcome', title: 'Welcome', date: '2023-01-01', content: 'Hello', created_by: 'user1', status: 'published', location: 'San Francisco' };
 
             // Implementation: supabase.from('posts').select(...).eq('slug', id).single()
             const mFrom = supabase.from as jest.Mock;
@@ -110,10 +143,11 @@ describe('lib/posts', () => {
             const postData = await getPostData('welcome');
 
             expect(mFrom).toHaveBeenCalledWith('posts');
-            expect(mSelect).toHaveBeenCalledWith('slug, title, date, content, created_by, status');
+            expect(mSelect).toHaveBeenCalledWith('slug, title, date, content, created_by, status, location');
             expect(mEq).toHaveBeenCalledWith('slug', 'welcome');
             expect(postData.id).toBe('welcome');
             expect(postData.title).toBe('Welcome');
+            expect(postData.location).toBe('San Francisco');
         });
 
         it('should throw error if post not found', async () => {

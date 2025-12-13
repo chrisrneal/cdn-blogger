@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/components/AuthContext';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import LocationIcon from '@/components/LocationIcon';
 
 interface Post {
   id: string;
@@ -11,6 +12,7 @@ interface Post {
   title: string;
   date: string;
   status: 'draft' | 'published';
+  location?: string;
 }
 
 export default function MyPosts() {
@@ -115,6 +117,15 @@ export default function MyPosts() {
                                 </h2>
                                 <div className="flex items-center gap-2 text-sm text-slate-500">
                                     <span>{new Date(post.date).toLocaleDateString()}</span>
+                                    {post.location && (
+                                        <>
+                                            <span>•</span>
+                                            <span className="flex items-center gap-1">
+                                                <LocationIcon size={12} />
+                                                {post.location}
+                                            </span>
+                                        </>
+                                    )}
                                     <span>•</span>
                                     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                                         post.status === 'published'
