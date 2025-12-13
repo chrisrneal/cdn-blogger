@@ -450,13 +450,13 @@ describe('commentService', () => {
       expect(result.error).toBeNull();
       expect(Array.isArray(result.data)).toBe(true);
       
-      const tree = result.data as any[];
+      const tree = result.data as CommentWithDepth[];
       expect(tree).toHaveLength(1); // One root comment
       expect(tree[0].id).toBe('c1');
       expect(tree[0].children).toHaveLength(1);
-      expect(tree[0].children[0].id).toBe('c2');
-      expect(tree[0].children[0].children).toHaveLength(1);
-      expect(tree[0].children[0].children[0].id).toBe('c3');
+      expect(tree[0].children![0].id).toBe('c2');
+      expect(tree[0].children![0].children).toHaveLength(1);
+      expect(tree[0].children![0].children![0].id).toBe('c3');
     });
 
     it('should apply depth limiting', async () => {
@@ -475,7 +475,7 @@ describe('commentService', () => {
 
       expect(result.error).toBeNull();
       
-      const tree = result.data as any[];
+      const tree = result.data as CommentWithDepth[];
       // With maxDepth=2, we should see:
       // - c1 (depth 1) ✓
       // - c2 (depth 2) ✓  
@@ -483,8 +483,8 @@ describe('commentService', () => {
       expect(tree).toHaveLength(1);
       expect(tree[0].id).toBe('c1');
       expect(tree[0].children).toHaveLength(1);
-      expect(tree[0].children[0].id).toBe('c2');
-      expect(tree[0].children[0].children).toEqual([]);
+      expect(tree[0].children![0].id).toBe('c2');
+      expect(tree[0].children![0].children).toEqual([]);
     });
 
     it('should filter by moderation status', async () => {

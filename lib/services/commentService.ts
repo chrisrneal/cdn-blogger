@@ -288,19 +288,20 @@ export async function getCommentsForPost(
     }
 
     // Build tree structure
-    let tree = buildCommentTree(comments);
+    const tree = buildCommentTree(comments);
 
     // Apply depth limiting if specified
+    let limitedTree = tree;
     if (maxDepth !== undefined && maxDepth > 0) {
-      tree = limitTreeDepth(tree, maxDepth);
+      limitedTree = limitTreeDepth(tree, maxDepth);
     }
 
     // Apply pagination to root-level comments if limit is specified
     if (limit) {
-      tree = tree.slice(offset, offset + limit);
+      return { data: limitedTree.slice(offset, offset + limit), error: null };
     }
 
-    return { data: tree, error: null };
+    return { data: limitedTree, error: null };
   } catch (err) {
     return {
       data: null,
@@ -335,7 +336,7 @@ export async function updateComment(
 
     // Build update object
     const updateData: Record<string, unknown> = {
-      updated_at: new Date().toISOString(),
+      updated_at: getCurrentTimestamp(),
     };
 
     if (updates.content !== undefined) {
@@ -411,8 +412,8 @@ export async function softDeleteComment(
       .from('comments')
       .update({
         is_deleted: true,
-        deleted_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        deleted_at: getCurrentTimestamp(),
+        updated_at: getCurrentTimestamp(),
       })
       .eq('id', commentId)
       .select()
@@ -466,7 +467,7 @@ export async function changeCommentStatus(
 
     const updateData: Record<string, unknown> = {
       moderation_status: status,
-      updated_at: new Date().toISOString(),
+      updated_at: getCurrentTimestamp(),
     };
 
     if (moderationNotes !== undefined) {
@@ -509,12 +510,20 @@ export async function changeCommentStatus(
 // ============================================================================
 
 /**
+ * Generates the current timestamp in ISO format.
+ */
+function getCurrentTimestamp(): string {
+  return new Date().toISOString();
+}
+
+/**
  * Limits the depth of a comment tree to the specified maximum.
  * Removes all children beyond the maximum depth.
  * 
  * @param comments - The comments to process at this level
  * @param maxDepth - Maximum depth to display (e.g., maxDepth=2 shows depths 1 and 2)
  * @param currentDepth - Current depth level being processed (starts at 1 for root)
+ * @returns The depth-limited comment tree
  * 
  * @example
  * // With maxDepth=2, shows root (depth 1) and immediate children (depth 2)
