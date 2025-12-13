@@ -6,24 +6,16 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 font-sans">
-      <main className="container mx-auto px-4 py-16">
+      <main className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
-          <header className="mb-16 flex justify-between items-baseline">
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight mb-2">
-                CDN Blogger
-              </h1>
-              <p className="text-slate-500 dark:text-slate-400">
-                Thoughts, ideas, and stories.
-              </p>
-            </div>
-            <Link
-              href="/editor"
-              className="text-sm text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
-            >
-              New Post
-            </Link>
-          </header>
+          <section className="mb-12">
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight mb-2">
+              Latest Posts
+            </h1>
+            <p className="text-slate-500 dark:text-slate-400">
+              Thoughts, ideas, and stories from the community.
+            </p>
+          </section>
 
           <section>
             <h2 className="sr-only">Blog Posts</h2>
