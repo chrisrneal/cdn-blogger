@@ -57,9 +57,9 @@ export async function POST(request: Request) {
       created_by: user.id,
     };
 
-    // Only include location if it's provided
-    if (location) {
-      insertData.location = location;
+    // Include location field (allows empty string to clear it)
+    if (location !== undefined) {
+      insertData.location = location || null;
     }
 
     const { data, error } = await supabaseAuthenticated.from('posts').insert(insertData);
