@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useRef } from 'react';
 import MarkdownRenderer from '../../components/MarkdownRenderer';
 import Link from 'next/link';
 import { useAuth } from '@/components/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
+import MarkdownToolbar from '../../components/MarkdownToolbar';
+import { applyMarkdown, MarkdownFormat } from '@/lib/editorUtils';
 
 function EditorContent() {
   const [title, setTitle] = useState('');
@@ -12,6 +14,7 @@ function EditorContent() {
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [postStatus, setPostStatus] = useState<'draft' | 'published'>('draft');
   const [loadingPost, setLoadingPost] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const { user, session, loading } = useAuth();
   const router = useRouter();
@@ -112,6 +115,23 @@ function EditorContent() {
     }
   };
 
+  const handleFormat = (format: MarkdownFormat) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+
+    const result = applyMarkdown(content, format, start, end);
+    setContent(result.text);
+
+    // Restore focus and selection
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(result.selectionStart, result.selectionEnd);
+    }, 0);
+  };
+
   if (loading || loadingPost) {
     return (
       <div className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center">
@@ -169,26 +189,15 @@ function EditorContent() {
           </div>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto h-[calc(100vh-12rem)]">
-          {/* Editor Column */}
-          <div className="flex flex-col gap-4">
-            <input
-              type="text"
-              placeholder="Post Title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full text-3xl font-bold bg-transparent border-none focus:ring-0 placeholder:text-slate-300 dark:placeholder:text-slate-700 text-slate-900 dark:text-white px-0"
-            />
-            <textarea
-              placeholder="Write your story in Markdown..."
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="w-full flex-1 resize-none bg-transparent border-none focus:ring-0 text-slate-700 dark:text-slate-300 px-0 leading-relaxed text-lg"
-            />
-          </div>
+        {/*
+            Changed from grid to flex-col.
+            Preview is now first.
+            Editor is now second.
+        */}
+        <div className="flex flex-col gap-8 max-w-6xl mx-auto h-[calc(100vh-12rem)]">
 
-          {/* Preview Column */}
-          <div className="hidden lg:block border-l border-slate-200 dark:border-slate-800 pl-8 overflow-y-auto">
+          {/* Preview Column (Top) */}
+          <div className="hidden lg:block flex-1 overflow-y-auto border-b border-slate-200 dark:border-slate-800 pb-8">
             <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-8">Preview</h2>
             {title && (
               <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
@@ -197,6 +206,29 @@ function EditorContent() {
             )}
             <MarkdownRenderer content={content || '*Nothing to preview*'} />
           </div>
+
+          {/* Editor Column (Bottom) */}
+          <div className="flex-1 flex flex-col gap-4">
+            <input
+              type="text"
+              placeholder="Post Title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full text-3xl font-bold bg-transparent border-none focus:ring-0 placeholder:text-slate-300 dark:placeholder:text-slate-700 text-slate-900 dark:text-white px-2"
+            />
+
+             {/* Markdown Toolbar */}
+             <MarkdownToolbar onFormat={handleFormat} />
+
+            <textarea
+              ref={textareaRef}
+              placeholder="Write your story in Markdown..."
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              className="w-full flex-1 resize-none bg-transparent border-none focus:ring-0 text-slate-700 dark:text-slate-300 px-2 leading-relaxed text-lg"
+            />
+          </div>
+
         </div>
       </div>
     </div>
