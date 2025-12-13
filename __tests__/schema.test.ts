@@ -249,20 +249,20 @@ describe('Database Schema Utilities', () => {
       formatted_address?: string;
     }
 
-    function isValidLocation(location: any): location is PostLocation {
-      if (!location || typeof location !== 'object') {
+    function isValidLocation(location: unknown): location is PostLocation {
+      if (!location || typeof location !== 'object' || Array.isArray(location)) {
         return false;
       }
 
-      const { lat, lon } = location;
+      const { lat, lon } = location as { lat?: unknown; lon?: unknown };
 
       // Validate latitude
-      if (typeof lat !== 'number' || lat < -90 || lat > 90) {
+      if (typeof lat !== 'number' || isNaN(lat) || lat < -90 || lat > 90) {
         return false;
       }
 
       // Validate longitude
-      if (typeof lon !== 'number' || lon < -180 || lon > 180) {
+      if (typeof lon !== 'number' || isNaN(lon) || lon < -180 || lon > 180) {
         return false;
       }
 
@@ -302,6 +302,16 @@ describe('Database Schema Utilities', () => {
       expect(isValidLocation(undefined)).toBe(false);
       expect(isValidLocation('location')).toBe(false);
       expect(isValidLocation(123)).toBe(false);
+    });
+
+    it('should reject arrays', () => {
+      expect(isValidLocation([40.7128, -74.0060])).toBe(false);
+      expect(isValidLocation([])).toBe(false);
+    });
+
+    it('should reject NaN values', () => {
+      expect(isValidLocation({ lat: NaN, lon: 0 })).toBe(false);
+      expect(isValidLocation({ lat: 0, lon: NaN })).toBe(false);
     });
   });
 

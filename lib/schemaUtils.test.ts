@@ -311,6 +311,24 @@ describe('schemaUtils', () => {
         expect(isValidLocation({ lat: 0, lon: 181 })).toBe(false);
         expect(isValidLocation({ lat: 0, lon: -181 })).toBe(false);
       });
+
+      it('should reject non-objects', () => {
+        expect(isValidLocation(null)).toBe(false);
+        expect(isValidLocation(undefined)).toBe(false);
+        expect(isValidLocation('location')).toBe(false);
+        expect(isValidLocation(123)).toBe(false);
+      });
+
+      it('should reject arrays', () => {
+        expect(isValidLocation([40.7128, -74.0060])).toBe(false);
+        expect(isValidLocation([])).toBe(false);
+      });
+
+      it('should reject NaN values', () => {
+        expect(isValidLocation({ lat: NaN, lon: 0 })).toBe(false);
+        expect(isValidLocation({ lat: 0, lon: NaN })).toBe(false);
+        expect(isValidLocation({ lat: NaN, lon: NaN })).toBe(false);
+      });
     });
 
     describe('formatLocation', () => {

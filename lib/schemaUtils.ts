@@ -228,20 +228,20 @@ export function isValidTag(tag: Partial<Tag>): tag is Tag {
 /**
  * Validates a location object.
  */
-export function isValidLocation(location: any): location is PostLocation {
-  if (!location || typeof location !== 'object') {
+export function isValidLocation(location: unknown): location is PostLocation {
+  if (!location || typeof location !== 'object' || Array.isArray(location)) {
     return false;
   }
 
-  const { lat, lon } = location;
+  const { lat, lon } = location as { lat?: unknown; lon?: unknown };
 
   // Validate latitude
-  if (typeof lat !== 'number' || lat < -90 || lat > 90) {
+  if (typeof lat !== 'number' || isNaN(lat) || lat < -90 || lat > 90) {
     return false;
   }
 
   // Validate longitude
-  if (typeof lon !== 'number' || lon < -180 || lon > 180) {
+  if (typeof lon !== 'number' || isNaN(lon) || lon < -180 || lon > 180) {
     return false;
   }
 
