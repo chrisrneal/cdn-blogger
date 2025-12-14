@@ -2,6 +2,7 @@ import { getPostData, getSortedPostsData } from '../../../lib/posts';
 import MarkdownRenderer from '../../../components/MarkdownRenderer';
 import EditPostButton from '@/components/EditPostButton';
 import LocationIcon from '@/components/LocationIcon';
+import CommentsList from '@/components/CommentsList';
 
 // Force dynamic rendering to ensure the latest data is fetched from the DB
 export const dynamic = 'force-dynamic';
@@ -53,6 +54,11 @@ export default async function Post({
           </header>
 
           <MarkdownRenderer content={postData.body} />
+
+          {/* Comments Section */}
+          <div className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-700">
+            <CommentsList postId={postData.uuid || postData.id} />
+          </div>
         </article>
       </main>
     </div>
