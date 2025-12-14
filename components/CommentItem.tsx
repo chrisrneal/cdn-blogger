@@ -162,20 +162,24 @@ export default function CommentItem({ comment, postId, onCommentUpdate }: Commen
 
             {/* Actions */}
             {!isEditing && (
-              <div className="flex items-center gap-4 mt-2">
+              <div className="flex items-center gap-4 mt-2" role="group" aria-label="Comment actions">
                 <button
                   onClick={() => setShowReplyForm(!showReplyForm)}
                   className="flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                  aria-expanded={showReplyForm}
+                  aria-label="Reply to comment"
                 >
-                  <MessageSquare size={14} />
+                  <MessageSquare size={14} aria-hidden="true" />
                   Reply
                 </button>
 
                 <button
                   className="flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                   title="Upvote (coming soon)"
+                  aria-label="Upvote comment"
+                  disabled
                 >
-                  <ThumbsUp size={14} />
+                  <ThumbsUp size={14} aria-hidden="true" />
                   <span>0</span>
                 </button>
 
@@ -184,8 +188,9 @@ export default function CommentItem({ comment, postId, onCommentUpdate }: Commen
                     <button
                       onClick={() => setIsEditing(true)}
                       className="flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                      aria-label="Edit comment"
                     >
-                      <Edit2 size={14} />
+                      <Edit2 size={14} aria-hidden="true" />
                       Edit
                     </button>
 
@@ -193,8 +198,9 @@ export default function CommentItem({ comment, postId, onCommentUpdate }: Commen
                       onClick={handleDelete}
                       disabled={submitting}
                       className="flex items-center gap-1 text-xs font-medium text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition-colors disabled:opacity-50"
+                      aria-label="Delete comment"
                     >
-                      <Trash2 size={14} />
+                      <Trash2 size={14} aria-hidden="true" />
                       Delete
                     </button>
                   </>
@@ -204,8 +210,10 @@ export default function CommentItem({ comment, postId, onCommentUpdate }: Commen
                   <button
                     onClick={() => setCollapsed(!collapsed)}
                     className="flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                    aria-expanded={!collapsed}
+                    aria-label={`${collapsed ? 'Show' : 'Hide'} ${comment.children?.length} ${comment.children?.length === 1 ? 'reply' : 'replies'}`}
                   >
-                    {collapsed ? <ChevronRight size={14} /> : <ChevronDown size={14} />}
+                    {collapsed ? <ChevronRight size={14} aria-hidden="true" /> : <ChevronDown size={14} aria-hidden="true" />}
                     {collapsed ? 'Show' : 'Hide'} {comment.children?.length} {comment.children?.length === 1 ? 'reply' : 'replies'}
                   </button>
                 )}
@@ -229,7 +237,7 @@ export default function CommentItem({ comment, postId, onCommentUpdate }: Commen
 
       {/* Nested Replies */}
       {!collapsed && hasReplies && (
-        <div className="space-y-0">
+        <div className="space-y-0" role="group" aria-label="Replies">
           {comment.children?.map((child) => (
             <CommentItem
               key={child.id}
