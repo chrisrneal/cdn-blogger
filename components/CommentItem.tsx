@@ -211,10 +211,10 @@ export default function CommentItem({ comment, postId, onCommentUpdate }: Commen
                     onClick={() => setCollapsed(!collapsed)}
                     className="flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                     aria-expanded={!collapsed}
-                    aria-label={`${collapsed ? 'Show' : 'Hide'} ${comment.children?.length} ${comment.children?.length === 1 ? 'reply' : 'replies'}`}
+                    aria-label={`${collapsed ? 'Show' : 'Hide'} ${comment.children!.length} ${comment.children!.length === 1 ? 'reply' : 'replies'}`}
                   >
                     {collapsed ? <ChevronRight size={14} aria-hidden="true" /> : <ChevronDown size={14} aria-hidden="true" />}
-                    {collapsed ? 'Show' : 'Hide'} {comment.children?.length} {comment.children?.length === 1 ? 'reply' : 'replies'}
+                    {collapsed ? 'Show' : 'Hide'} {comment.children!.length} {comment.children!.length === 1 ? 'reply' : 'replies'}
                   </button>
                 )}
               </div>

@@ -33,7 +33,7 @@ export default function ReplyForm({ postId, parentId, onSuccess, onCancel }: Rep
           post_id: postId,
           parent_id: parentId,
           content: content.trim(),
-          author_name: authorName.trim() || 'Anonymous',
+          author_name: user ? (user.email?.split('@')[0] || 'User') : (authorName.trim() || 'Anonymous'),
           author_email: authorEmail.trim() || undefined,
           created_by: user?.id,
         }),
