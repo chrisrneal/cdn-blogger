@@ -57,7 +57,7 @@ export default async function Post({
 
           {/* Comments Section */}
           <div className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-700">
-            <CommentsList postId={postData.id} />
+            <CommentsList postId={postData.uuid || postData.id} />
           </div>
         </article>
       </main>

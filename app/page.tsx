@@ -2,6 +2,9 @@ import Link from 'next/link';
 import { getSortedPostsData } from '../lib/posts';
 import PostList from '@/components/PostList';
 
+// Force dynamic rendering to ensure the latest posts are always shown
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
   const allPostsData = await getSortedPostsData();
 

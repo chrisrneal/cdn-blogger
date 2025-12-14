@@ -74,7 +74,7 @@ describe('lib/posts', () => {
             const posts = await getSortedPostsData();
 
             expect(mFrom).toHaveBeenCalledWith('posts');
-            expect(mSelect).toHaveBeenCalledWith('slug, title, date, content, created_by, status, location');
+            expect(mSelect).toHaveBeenCalledWith('id, slug, title, date, content, created_by, status, location');
             expect(mEq).toHaveBeenCalledWith('status', 'published');
             expect(mOrder).toHaveBeenCalledWith('date', { ascending: false });
 
@@ -118,7 +118,7 @@ describe('lib/posts', () => {
             const posts = await getSortedPostsData('New York');
 
             expect(mFrom).toHaveBeenCalledWith('posts');
-            expect(mSelect).toHaveBeenCalledWith('slug, title, date, content, created_by, status, location');
+            expect(mSelect).toHaveBeenCalledWith('id, slug, title, date, content, created_by, status, location');
             expect(mEq).toHaveBeenCalledWith('status', 'published');
             expect(mIlike).toHaveBeenCalledWith('location', '%New York%');
             expect(mOrder).toHaveBeenCalledWith('date', { ascending: false });
@@ -143,7 +143,7 @@ describe('lib/posts', () => {
             const postData = await getPostData('welcome');
 
             expect(mFrom).toHaveBeenCalledWith('posts');
-            expect(mSelect).toHaveBeenCalledWith('slug, title, date, content, created_by, status, location');
+            expect(mSelect).toHaveBeenCalledWith('id, slug, title, date, content, created_by, status, location');
             expect(mEq).toHaveBeenCalledWith('slug', 'welcome');
             expect(postData.id).toBe('welcome');
             expect(postData.title).toBe('Welcome');
