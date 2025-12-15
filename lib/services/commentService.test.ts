@@ -38,7 +38,7 @@ describe('commentService', () => {
         path: ['comment-1'],
         content: 'Test comment',
         author_name: 'Test User',
-        moderation_status: 'pending',
+        moderation_status: 'approved',
         flags_count: 0,
         is_deleted: false,
         reply_count: 0,
@@ -90,6 +90,7 @@ describe('commentService', () => {
         author_name: 'Test User',
         author_email: undefined,
         created_by: undefined,
+        moderation_status: 'approved',
       });
     });
 
@@ -107,7 +108,7 @@ describe('commentService', () => {
         path: ['parent-1', 'comment-2'],
         content: 'Reply comment',
         author_name: 'Test User 2',
-        moderation_status: 'pending',
+        moderation_status: 'approved',
         flags_count: 0,
         is_deleted: false,
         reply_count: 0,

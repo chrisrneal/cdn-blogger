@@ -148,6 +148,7 @@ export async function createComment(
         author_name: input.author_name.trim(),
         author_email: input.author_email,
         created_by: input.created_by,
+        moderation_status: 'approved', // Auto-approve comments
       })
       .select()
       .single();
