@@ -265,13 +265,4 @@ describe('CONTENT_POLICY', () => {
     expect(CONTENT_POLICY.ALLOWED_ATTR['a']).toContain('href');
     expect(CONTENT_POLICY.ALLOWED_ATTR['a']).toContain('title');
   });
-
-  it('should allow safe URI protocols', () => {
-    expect(CONTENT_POLICY.ALLOWED_URI_REGEXP.test('https://example.com')).toBe(true);
-    expect(CONTENT_POLICY.ALLOWED_URI_REGEXP.test('http://example.com')).toBe(true);
-    expect(CONTENT_POLICY.ALLOWED_URI_REGEXP.test('mailto:test@example.com')).toBe(true);
-    expect(CONTENT_POLICY.ALLOWED_URI_REGEXP.test('ftp://files.example.com')).toBe(true);
-    expect(CONTENT_POLICY.ALLOWED_URI_REGEXP.test('javascript:alert(1)')).toBe(false);
-    expect(CONTENT_POLICY.ALLOWED_URI_REGEXP.test('data:text/html,<script>alert(1)</script>')).toBe(false);
-  });
 });

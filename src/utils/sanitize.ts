@@ -26,9 +26,6 @@ export const CONTENT_POLICY = {
     'a': ['href', 'title', 'target', 'rel'],
     '*': ['class'] // Allow class on all tags for styling
   },
-  
-  // Protocol whitelist for links
-  ALLOWED_URI_REGEXP: /^(?:https?|mailto|ftp):/i,
 } as const;
 
 /**
@@ -92,7 +89,6 @@ export function sanitizeCommentContent(content: string): SanitizationResult {
   // Sanitize the content
   sanitized = sanitizeHtml(sanitized, config);
   
-  // Auto-add security attributes to links (already handled by transformTags)
   
   return {
     sanitized,
