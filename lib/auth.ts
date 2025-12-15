@@ -2,6 +2,48 @@
  * Authorization utilities for API routes
  * 
  * Provides helper functions for checking user roles and permissions.
+ * 
+ * **SECURITY WARNING:**
+ * This is a simplified implementation for development/testing purposes.
+ * The current implementation uses simple headers (x-user-id, x-user-role) which
+ * can be easily spoofed and is NOT secure for production use.
+ * 
+ * **For Production:**
+ * 1. Implement proper JWT/session-based authentication using Supabase Auth
+ * 2. Validate tokens on each request
+ * 3. Store user roles in the database with proper access controls
+ * 4. Use Supabase RLS policies to enforce authorization at the database level
+ * 5. Consider using middleware for authentication/authorization checks
+ * 
+ * Example production implementation with Supabase:
+ * ```typescript
+ * import { createClient } from '@supabase/supabase-js';
+ * 
+ * export async function getAuthContext(request: NextRequest) {
+ *   const token = request.headers.get('authorization')?.replace('Bearer ', '');
+ *   const supabase = createClient(url, key);
+ *   const { data: { user }, error } = await supabase.auth.getUser(token);
+ *   
+ *   if (error || !user) {
+ *     return { isAuthenticated: false, isModerator: false, isAdmin: false };
+ *   }
+ *   
+ *   // Fetch user role from database
+ *   const { data: profile } = await supabase
+ *     .from('user_profiles')
+ *     .select('role')
+ *     .eq('user_id', user.id)
+ *     .single();
+ *   
+ *   return {
+ *     userId: user.id,
+ *     role: profile?.role,
+ *     isAuthenticated: true,
+ *     isModerator: profile?.role === 'moderator' || profile?.role === 'admin',
+ *     isAdmin: profile?.role === 'admin',
+ *   };
+ * }
+ * ```
  */
 
 import { NextRequest } from 'next/server';
