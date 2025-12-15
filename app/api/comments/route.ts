@@ -15,9 +15,12 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  // Fetch all approved comments, including deleted ones
+  // Deleted comments will be shown as placeholders to preserve thread structure
   const { data, error } = await getCommentsForPost(postId, {
     asTree: true,
     moderationStatus: 'approved',
+    includeDeleted: true,
   });
 
   if (error) {
