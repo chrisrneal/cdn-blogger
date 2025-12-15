@@ -8,6 +8,7 @@
 
 import { supabase } from '../supabase';
 import { Comment, CommentWithDepth, ModerationStatus, buildCommentTree } from '../schemaUtils';
+import { processCommentContent, SANITIZER_VERSION } from '../../src/utils/sanitize';
 
 // ============================================================================
 // Types
@@ -65,13 +66,15 @@ export async function createComment(
   input: CreateCommentInput
 ): Promise<{ data: Comment | null; error: CommentServiceError | null }> {
   try {
-    // Validate input
-    if (!input.content?.trim()) {
+    // Sanitize and validate content
+    const { result: sanitizationResult, error: sanitizationError } = processCommentContent(input.content);
+    
+    if (sanitizationError || !sanitizationResult) {
       return {
         data: null,
         error: {
           code: 'INVALID_INPUT',
-          message: 'Comment content cannot be empty',
+          message: sanitizationError || 'Invalid content',
         },
       };
     }
@@ -144,7 +147,9 @@ export async function createComment(
       .insert({
         post_id: input.post_id,
         parent_id: input.parent_id || null,
-        content: input.content.trim(),
+        content: sanitizationResult.original,
+        sanitized_content: sanitizationResult.sanitized,
+        sanitizer_version: sanitizationResult.version,
         author_name: input.author_name.trim(),
         author_email: input.author_email,
         created_by: input.created_by,
@@ -340,16 +345,21 @@ export async function updateComment(
     };
 
     if (updates.content !== undefined) {
-      if (!updates.content.trim()) {
+      // Sanitize and validate content
+      const { result: sanitizationResult, error: sanitizationError } = processCommentContent(updates.content);
+      
+      if (sanitizationError || !sanitizationResult) {
         return {
           data: null,
           error: {
             code: 'INVALID_INPUT',
-            message: 'Comment content cannot be empty',
+            message: sanitizationError || 'Invalid content',
           },
         };
       }
-      updateData.content = updates.content.trim();
+      updateData.content = sanitizationResult.original;
+      updateData.sanitized_content = sanitizationResult.sanitized;
+      updateData.sanitizer_version = sanitizationResult.version;
     }
 
     if (updates.author_name !== undefined) {
