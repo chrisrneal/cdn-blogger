@@ -8,6 +8,7 @@
 import { supabase } from '../supabase';
 import { Comment, ModerationStatus } from '../schemaUtils';
 import { softDeleteComment, changeCommentStatus } from './commentService';
+import { MODERATION_CONSTANTS } from '../constants/moderation';
 
 // ============================================================================
 // Types
@@ -135,7 +136,7 @@ export async function getModerationQueue(
     const {
       status = ['flagged', 'pending'],
       minFlags = 1,
-      limit = 50,
+      limit = MODERATION_CONSTANTS.DEFAULT_MODERATION_QUEUE_LIMIT,
       offset = 0,
     } = options;
 

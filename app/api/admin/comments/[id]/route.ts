@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { moderateComment, getCommentFlags } from '@/lib/services/moderationService';
 import { requireModerator } from '@/lib/auth';
+import { MODERATION_CONSTANTS } from '@/lib/constants/moderation';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,9 +33,9 @@ export async function PATCH(
     }
 
     // Validate moderation_notes length if provided
-    if (moderation_notes && typeof moderation_notes === 'string' && moderation_notes.length > 1000) {
+    if (moderation_notes && typeof moderation_notes === 'string' && moderation_notes.length > MODERATION_CONSTANTS.MAX_MODERATION_NOTES_LENGTH) {
       return NextResponse.json(
-        { error: 'Moderation notes are too long (max 1000 characters)' },
+        { error: `Moderation notes are too long (max ${MODERATION_CONSTANTS.MAX_MODERATION_NOTES_LENGTH} characters)` },
         { status: 400 }
       );
     }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getModerationQueue } from '@/lib/services/moderationService';
 import { requireModerator } from '@/lib/auth';
 import { ModerationStatus } from '@/lib/schemaUtils';
+import { MODERATION_CONSTANTS } from '@/lib/constants/moderation';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,13 +22,13 @@ export async function GET(request: NextRequest) {
     // Parse query parameters
     const statusParam = searchParams.get('status');
     const minFlags = parseInt(searchParams.get('minFlags') || '1', 10);
-    const limit = parseInt(searchParams.get('limit') || '50', 10);
+    const limit = parseInt(searchParams.get('limit') || String(MODERATION_CONSTANTS.DEFAULT_MODERATION_QUEUE_LIMIT), 10);
     const offset = parseInt(searchParams.get('offset') || '0', 10);
 
     // Validate parameters
-    if (limit < 1 || limit > 100) {
+    if (limit < 1 || limit > MODERATION_CONSTANTS.MAX_MODERATION_QUEUE_LIMIT) {
       return NextResponse.json(
-        { error: 'Limit must be between 1 and 100' },
+        { error: `Limit must be between 1 and ${MODERATION_CONSTANTS.MAX_MODERATION_QUEUE_LIMIT}` },
         { status: 400 }
       );
     }

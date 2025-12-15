@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { flagComment } from '@/lib/services/moderationService';
 import { requireAuth } from '@/lib/auth';
+import { MODERATION_CONSTANTS } from '@/lib/constants/moderation';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,9 +24,9 @@ export async function POST(
     const { reason } = body;
 
     // Validate reason length if provided
-    if (reason && typeof reason === 'string' && reason.length > 500) {
+    if (reason && typeof reason === 'string' && reason.length > MODERATION_CONSTANTS.MAX_FLAG_REASON_LENGTH) {
       return NextResponse.json(
-        { error: 'Reason is too long (max 500 characters)' },
+        { error: `Reason is too long (max ${MODERATION_CONSTANTS.MAX_FLAG_REASON_LENGTH} characters)` },
         { status: 400 }
       );
     }
