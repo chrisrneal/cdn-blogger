@@ -515,6 +515,88 @@ export async function changeCommentStatus(
   }
 }
 
+/**
+ * Retrieves all comments created by a specific user.
+ * Includes post information for each comment.
+ */
+export async function getCommentsByUser(
+  userId: string,
+  options: GetCommentsOptions = {}
+): Promise<{ data: (Comment & { post_title?: string })[] | null; error: CommentServiceError | null }> {
+  try {
+    const {
+      includeDeleted = false,
+      moderationStatus,
+      limit,
+      offset = 0,
+      sortBy = 'created_at',
+      sortDirection = 'desc', // Most recent first by default
+    } = options;
+
+    // Build query - join with posts to get post title
+    let query = supabase
+      .from('comments')
+      .select(`
+        *,
+        posts!inner(title)
+      `)
+      .eq('created_by', userId);
+
+    // Filter by deletion status
+    if (!includeDeleted) {
+      query = query.eq('is_deleted', false);
+    }
+
+    // Filter by moderation status
+    if (moderationStatus) {
+      if (Array.isArray(moderationStatus)) {
+        query = query.in('moderation_status', moderationStatus);
+      } else {
+        query = query.eq('moderation_status', moderationStatus);
+      }
+    }
+
+    // Apply sorting
+    query = query.order(sortBy, { ascending: sortDirection === 'asc' });
+
+    // Apply pagination
+    if (limit) {
+      query = query.range(offset, offset + limit - 1);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      return {
+        data: null,
+        error: {
+          code: 'QUERY_FAILED',
+          message: 'Failed to retrieve user comments',
+          details: error,
+        },
+      };
+    }
+
+    // Transform the data to include post_title at the comment level
+    const comments = (data || []).map((item: any) => ({
+      ...item,
+      post_title: item.posts?.title,
+      posts: undefined, // Remove nested posts object
+    }));
+
+    return { data: comments, error: null };
+  } catch (err) {
+    return {
+      data: null,
+      error: {
+        code: 'UNEXPECTED_ERROR',
+        message: 'An unexpected error occurred',
+        details: err,
+      },
+    };
+  }
+}
+
 // ============================================================================
 // Helper Functions
 // ============================================================================
