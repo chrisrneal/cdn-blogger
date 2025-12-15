@@ -87,6 +87,8 @@ describe('commentService', () => {
         post_id: 'post-1',
         parent_id: null,
         content: 'Test comment',
+        sanitized_content: 'Test comment',
+        sanitizer_version: expect.any(String),
         author_name: 'Test User',
         author_email: undefined,
         created_by: undefined,
@@ -166,7 +168,7 @@ describe('commentService', () => {
       expect(result.data).toBeNull();
       expect(result.error).toEqual({
         code: 'INVALID_INPUT',
-        message: 'Comment content cannot be empty',
+        message: 'Content cannot be empty',
       });
     });
 
@@ -290,6 +292,81 @@ describe('commentService', () => {
 
       expect(result.data).toBeNull();
       expect(result.error?.code).toBe('PARENT_POST_MISMATCH');
+    });
+
+    it('should sanitize content with XSS attempts', async () => {
+      const mockPost = { id: 'post-1' };
+      const mockComment: Comment = {
+        id: 'comment-1',
+        post_id: 'post-1',
+        parent_id: null,
+        path: ['comment-1'],
+        content: 'Safe text <script>alert("XSS")</script> more text',
+        sanitized_content: 'Safe text  more text',
+        sanitizer_version: '1.0.0',
+        author_name: 'Test User',
+        moderation_status: 'pending',
+        flags_count: 0,
+        is_deleted: false,
+        reply_count: 0,
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-01T00:00:00Z',
+      };
+
+      const mockInsert = jest.fn().mockReturnThis();
+      
+      (supabase.from as jest.Mock).mockImplementation((table: string) => {
+        if (table === 'posts') {
+          return {
+            select: jest.fn().mockReturnValue({
+              eq: jest.fn().mockReturnValue({
+                single: jest.fn().mockResolvedValue({ data: mockPost, error: null }),
+              }),
+            }),
+          };
+        }
+        if (table === 'comments') {
+          return {
+            insert: mockInsert.mockReturnValue({
+              select: jest.fn().mockReturnValue({
+                single: jest.fn().mockResolvedValue({ data: mockComment, error: null }),
+              }),
+            }),
+          };
+        }
+      });
+
+      const input: CreateCommentInput = {
+        post_id: 'post-1',
+        content: 'Safe text <script>alert("XSS")</script> more text',
+        author_name: 'Test User',
+      };
+
+      const result = await createComment(input);
+
+      expect(result.error).toBeNull();
+      expect(result.data).toBeDefined();
+      // Verify sanitized_content is stored
+      expect(mockInsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          sanitized_content: expect.not.stringContaining('<script>'),
+          sanitizer_version: expect.any(String),
+        })
+      );
+    });
+
+    it('should reject content that is too long', async () => {
+      const input: CreateCommentInput = {
+        post_id: 'post-1',
+        content: 'a'.repeat(10001),
+        author_name: 'Test User',
+      };
+
+      const result = await createComment(input);
+
+      expect(result.data).toBeNull();
+      expect(result.error?.code).toBe('INVALID_INPUT');
+      expect(result.error?.message).toContain('maximum length');
     });
   });
 
