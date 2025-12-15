@@ -87,6 +87,56 @@ export default function CommentItem({ comment, postId, onCommentUpdate }: Commen
   const indentClass = comment.depth > 0 ? 'ml-6 sm:ml-8 md:ml-12' : '';
   const borderClass = comment.depth > 0 ? 'border-l-2 border-slate-200 dark:border-slate-700 pl-4' : '';
 
+  // If comment is soft-deleted, show placeholder
+  if (comment.is_deleted) {
+    return (
+      <div className={`${indentClass} ${borderClass}`}>
+        <div className="py-3">
+          <div className="flex items-start gap-3">
+            {/* Deleted indicator */}
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+              <Trash2 size={14} className="text-slate-400 dark:text-slate-600" aria-hidden="true" />
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <p className="text-sm italic text-slate-400 dark:text-slate-600">
+                [Comment deleted]
+              </p>
+
+              {hasReplies && (
+                <div className="flex items-center gap-4 mt-2">
+                  <button
+                    onClick={() => setCollapsed(!collapsed)}
+                    className="flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                    aria-expanded={!collapsed}
+                    aria-label={`${collapsed ? 'Show' : 'Hide'} ${comment.children!.length} ${comment.children!.length === 1 ? 'reply' : 'replies'}`}
+                  >
+                    {collapsed ? <ChevronRight size={14} aria-hidden="true" /> : <ChevronDown size={14} aria-hidden="true" />}
+                    {collapsed ? 'Show' : 'Hide'} {comment.children!.length} {comment.children!.length === 1 ? 'reply' : 'replies'}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Nested Replies - still show them */}
+        {!collapsed && hasReplies && (
+          <div className="space-y-0" role="group" aria-label="Replies">
+            {comment.children?.map((child) => (
+              <CommentItem
+                key={child.id}
+                comment={child}
+                postId={postId}
+                onCommentUpdate={onCommentUpdate}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className={`${indentClass} ${borderClass}`}>
       <div className="py-3">
