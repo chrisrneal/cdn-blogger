@@ -52,15 +52,23 @@ export default function Navbar() {
         <div className="flex items-center gap-4">
           {!loading && (
             <>
-              {/* My Posts & New Post Links */}
+              {/* My Posts, My Comments & New Post Links */}
               <div className="hidden sm:flex items-center gap-4 text-sm font-medium">
                 {user && (
-                  <Link
-                    href="/my-posts"
-                    className="text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
-                  >
-                    My Posts
-                  </Link>
+                  <>
+                    <Link
+                      href="/my-posts"
+                      className="text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
+                    >
+                      My Posts
+                    </Link>
+                    <Link
+                      href="/my-comments"
+                      className="text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
+                    >
+                      My Comments
+                    </Link>
+                  </>
                 )}
                 <Link
                   href="/editor"
@@ -101,12 +109,20 @@ export default function Navbar() {
                     {/* Mobile Only Links (Show if screen is small) */}
                     <div className="sm:hidden border-b border-slate-100 dark:border-slate-800 pb-1 mb-1">
                         {user && (
-                            <Link
-                                href="/my-posts"
-                                className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
-                            >
-                                <span>My Posts</span>
-                            </Link>
+                            <>
+                                <Link
+                                    href="/my-posts"
+                                    className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                                >
+                                    <span>My Posts</span>
+                                </Link>
+                                <Link
+                                    href="/my-comments"
+                                    className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                                >
+                                    <span>My Comments</span>
+                                </Link>
+                            </>
                         )}
                         <Link
                             href="/editor"
