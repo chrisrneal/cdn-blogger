@@ -51,9 +51,14 @@ describe('Comment Integration Tests', () => {
     path: string[] = []
   ): Comment => {
     const id = `comment-${commentIdCounter++}`;
-    const commentPath = parentId
-      ? [...(mockComments.find(c => c.id === parentId)?.path || []), id]
-      : [id];
+    let commentPath: string[];
+    
+    if (parentId) {
+      const parent = mockComments.find(c => c.id === parentId);
+      commentPath = parent ? [...parent.path, id] : [parentId, id];
+    } else {
+      commentPath = [id];
+    }
 
     return {
       id,
@@ -111,8 +116,10 @@ describe('Comment Integration Tests', () => {
         });
 
         mockChain.single.mockImplementation(() => {
-          const comment = mockComments[mockComments.length - 1];
-          return Promise.resolve({ data: comment || null, error: comment ? null : { message: 'Not found' } });
+          // For queries, return the most recently queried comment
+          // This is a simplification but works for the test scenarios
+          const comment = mockComments.length > 0 ? mockComments[mockComments.length - 1] : null;
+          return Promise.resolve({ data: comment, error: comment ? null : { message: 'Not found' } });
         });
 
         mockChain.update.mockImplementation((data: any) => {

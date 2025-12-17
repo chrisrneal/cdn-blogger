@@ -34,9 +34,6 @@ jobs:
     - name: Run all tests
       run: npm test
 
-    - name: Run integration tests
-      run: npm test -- tests/integration/
-
     - name: Upload test results
       if: always()
       uses: actions/upload-artifact@v4
