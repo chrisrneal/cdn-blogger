@@ -48,6 +48,8 @@ export default function ReviewPage() {
       if (!session?.access_token || !user) return;
 
       try {
+        // TEMPORARY: Sending 'moderator' role to match backend expectations
+        // TODO: Update when proper role-based auth is implemented
         const res = await fetch('/api/admin/comments/flags?status=flagged,pending', {
           headers: {
             'x-user-id': user.id,
@@ -88,6 +90,8 @@ export default function ReviewPage() {
     setSubmitting(commentId);
 
     try {
+      // TEMPORARY: Sending 'moderator' role to match backend expectations
+      // TODO: Update when proper role-based auth is implemented
       const response = await fetch(`/api/admin/comments/${commentId}`, {
         method: 'PATCH',
         headers: {
